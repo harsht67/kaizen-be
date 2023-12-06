@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-
+import connectDB from "./utils/db";
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
@@ -14,6 +14,7 @@ app.use(cors({
 
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
+    connectDB();
 });
 
 app.get("/test", (req: Request, res: Response, next: NextFunction) => {
