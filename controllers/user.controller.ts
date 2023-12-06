@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import userModel from "../models/user.model";
 import jwt from "jsonwebtoken";
+import ErrorHandler from "../utils/ErrorHandler";
 require("dotenv").config();
 
 interface JwtPayload {
@@ -18,6 +19,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             return next(new ErrorHandler("Email already exist", 400))
         }
 
+        const user = {
+            name,
+            email,
+            password
+        }
+
+        await userModel.create({name, email, password});
+
         const token = createJwtToken({name, email, password});
 
         res.status(201).json({
@@ -30,13 +39,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
-export const createJwtToken = async (user: JwtPayload) => {
+export const createJwtToken = (user: JwtPayload) => {
     const jwtSecret = process.env.JWT_SECRET;
     if(!jwtSecret) {
         throw new Error("Jwt secret not found");
     }
     try {
         const token = jwt.sign(user, jwtSecret, { expiresIn: '30m' });
+        console.log(token);
         return token;
     }
     catch (error) {

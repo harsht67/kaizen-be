@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import connectDB from "./utils/db";
+import userRouter from "./routes/user.route";
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
@@ -11,6 +12,9 @@ app.use(express.json());
 app.use(cors({
     origin: process.env.ORIGIN
 }))
+
+// app.use("api/v1", userRouter);
+app.use(userRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
