@@ -38,7 +38,7 @@ export const authenticateAndAuthorize = (requiredRole: string) => {
             next();
         }
         catch(error) {
-
+            return next(new ErrorHandler("Unauthorized", 401));
         }
     }
 }

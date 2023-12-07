@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import userModel from "../models/user.model";
 import jwt from "jsonwebtoken";
 import ErrorHandler from "../utils/ErrorHandler";
+import { sendToken } from "../utils/jwt";
 require("dotenv").config();
 
 interface JwtPayload {
@@ -49,6 +50,8 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         if(!isPasswordMatch) {
             return next(new ErrorHandler("Incorrect password!", 400));
         }
+
+        sendToken(user, 200, res);
     }
     catch(error: any) {
         return next(new ErrorHandler(error.message, 500));
