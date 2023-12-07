@@ -20,9 +20,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             return next(new ErrorHandler("Email already exist", 400))
         }
 
-        await userModel.create({name, email, password, role: 'user'});
+        await userModel.create({ name, email, password, role: 'user' });
 
-        const token = createJwtToken({name, email, role: 'user'});
+        const token = createJwtToken({ name, email, role: 'user' });
 
         res.status(201).json({
             success: true,
@@ -37,30 +37,45 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
-        if(!email || !password) {
+        if (!email || !password) {
             return next(new ErrorHandler("Please enter your email and password", 400));
         }
 
-        const user = await userModel.findOne({email});
-        if(!user) {
+        const user = await userModel.findOne({ email });
+        if (!user) {
             return next(new ErrorHandler("User not found!", 400));
         }
 
         const isPasswordMatch = await user.comparePassword(password);
-        if(!isPasswordMatch) {
+        if (!isPasswordMatch) {
             return next(new ErrorHandler("Incorrect password!", 400));
         }
 
         sendToken(user, 200, res);
     }
-    catch(error: any) {
+    catch (error: any) {
         return next(new ErrorHandler(error.message, 500));
+    }
+}
+
+export const logoutUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.cookie("access_token", "", { maxAge: 1 });
+        res.cookie("refresh_token", "", { maxAge: 1 });
+
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        })
+    }
+    catch (error) {
+        return next(error);
     }
 }
 
 export const createJwtToken = (user: JwtPayload) => {
     const jwtSecret = process.env.JWT_SECRET;
-    if(!jwtSecret) {
+    if (!jwtSecret) {
         throw new Error("Jwt secret not found");
     }
     try {
