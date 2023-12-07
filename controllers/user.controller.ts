@@ -7,7 +7,7 @@ require("dotenv").config();
 interface JwtPayload {
     name: string;
     email: string;
-    password: string;
+    role: string;
 }
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -19,15 +19,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             return next(new ErrorHandler("Email already exist", 400))
         }
 
-        const user = {
-            name,
-            email,
-            password
-        }
+        await userModel.create({name, email, password, role: 'user'});
 
-        await userModel.create({name, email, password});
-
-        const token = createJwtToken({name, email, password});
+        const token = createJwtToken({name, email, role: 'user'});
 
         res.status(201).json({
             success: true,
@@ -35,6 +29,28 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         })
     }
     catch (error: any) {
+        return next(new ErrorHandler(error.message, 500));
+    }
+}
+
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+        if(!email || !password) {
+            return next(new ErrorHandler("Please enter your email and password", 400));
+        }
+
+        const user = await userModel.findOne({email});
+        if(!user) {
+            return next(new ErrorHandler("User not found!", 400));
+        }
+
+        const isPasswordMatch = await user.comparePassword(password);
+        if(!isPasswordMatch) {
+            return next(new ErrorHandler("Incorrect password!", 400));
+        }
+    }
+    catch(error: any) {
         return next(new ErrorHandler(error.message, 500));
     }
 }

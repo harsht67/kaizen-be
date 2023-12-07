@@ -7,6 +7,8 @@ export interface IUser extends Document {
     password: string;
     role: string;
     comparePassword: (password: string) => Promise<boolean>;
+    SignAccessToken: () => string;
+    SignRefreshToken: () => string;
 }
 
 const userSchema: Schema<IUser> = new Schema({
@@ -26,6 +28,7 @@ const userSchema: Schema<IUser> = new Schema({
     },
     role: {
         type: String,
+        enum: ['user', 'admin'],
         default: "user"
     },
 
